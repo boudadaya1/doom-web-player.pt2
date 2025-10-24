@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Freedoom – Play in Your Browser</title>
+  <script src="https://js-dos.com/6.22/current/js-dos.js"></script>
+  <style>
+    body {
+      background: #000;
+      color: #0f0;
+      font-family: monospace;
+      text-align: center;
+      margin: 0;
+    }
+    h1 { margin: 1em 0; }
+    #dosbox {
+      width: 100%;
+      height: 80vh;
+      border: 2px solid #0f0;
+      background: #111;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      background: #111;
+      color: #0f0;
+      border: 1px solid #0f0;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    button:hover {
+      background: #0f0;
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+  <h1>Freedoom (Free DOOM Engine)</h1>
+  <p>Click the button below to start playing the open-source Freedoom project in your browser.</p>
+  <button id="start">Start Freedoom</button>
+  <div id="dosbox"></div>
+
+  <script>
+    const startButton = document.getElementById("start");
+    startButton.onclick = async () => {
+      const dosbox = await Dos(document.getElementById("dosbox"), {
+        wdosboxUrl: "https://js-dos.com/6.22/current/wdosbox.js"
+      });
+
+      // Run Freedoom shareware-style package hosted on the Internet Archive
+      // (Freedoom 0.12.1 DOS version)
+      await dosbox.run("https://archive.org/download/freedoom-0.12.1/freedoom-0.12.1.zip");
+    };
+  </script>
+</body>
+</html>
