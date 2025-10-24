@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DOOM / Freedoom – Web Player</title>
+  <script src="https://js-dos.com/6.22/current/js-dos.js"></script>
+  <style>
+    body {
+      background: #000;
+      color: #0f0;
+      font-family: monospace;
+      text-align: center;
+      margin: 0;
+      overflow: hidden;
+    }
+    h1 {
+      margin: 1em 0 0.5em;
+      color: #0f0;
+    }
+    #dosbox {
+      width: 100%;
+      height: 80vh;
+      border: 2px solid #0f0;
+      background: #111;
+      margin-top: 1em;
+    }
+    input[type="file"], button {
+      margin: 0.5em;
+      padding: 10px 20px;
+      font-size: 1em;
+      background: #111;
+      color: #0f0;
+      border: 1px solid #0f0;
+      cursor: pointer;
+    }
+    input[type="file"]::-webkit-file-upload-button {
+      background: #0f0;
+      color: #000;
+      border: none;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    input[type="file"]:hover,
+    button:hover {
+      background: #0f0;
+      color: #000;
+    }
+    #controls {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      padding: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <h1>DOOM / Freedoom – Web Edition</h1>
+    <p>Upload a WAD (like DOOM.WAD or Freedoom) or play Freedoom below:</p>
+    <input type="file" id="wadFile" accept=".wad">
+    <button id="startFreedoom">Play Freedoom</button>
+    <button id="startCustom">Play Uploaded WAD</button>
+    <button id="fullscreen">Fullscreen</button>
+  </div>
+  <div id="dosbox"></div>
+
+  <script>
+    let dosboxInstance = null;
+
+    async function initDosbox() {
+      if (dosboxInstance) return dosboxInstance;
+      dosboxInstance = await Dos(document.getElementById("dosbox"), {
+        wdosboxUrl: "https://js-dos.com/6.22/current/wdosbox.js"
+      });
+      return dosboxInstance;
+    }
+
+    // Play Freedoom directly
+    document.getElementById("startFreedoom").onclick = async () => {
+      const dosbox = await initDosbox();
+      await dosbox.run("https://archive.org/download/freedoom-0.12.1/freedoom-0.12.1.zip");
+    };
+
+    // Play custom uploaded WAD
+    document.getElementById("startCustom").onclick = async () => {
+      const file = document.getElementById("wadFile").files[0];
+      if (!file) {
+        alert("Please choose a WAD file first!");
+        return;
+      }
+
+      const dosbox = await initDosbox();
+      const fs = await dosbox.fs();
+      const buffer = await file.arrayBuffer();
+      await fs.createFile("CUSTOM.WAD", new Uint8Array(buffer));
+
+      // Load Freedoom environment as engine base
+      await dosbox.run("https://archive.org/download/freedoom-0.12.1/freedoom-0.12.1.zip", {
+        mount: { "/": fs }
+      });
+
+      // Run Freedoom executable with your uploaded WAD
+      dosbox.command("doom -file CUSTOM.WAD");
+    };
+
+    // Fullscreen toggle
+    document.getElementById("fullscreen").onclick = () => {
+      const el = document.getElementById("dosbox");
+      if (el.requestFullscreen) el.requestFullscreen();
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    };
+  </script>
+</body>
+</html>
