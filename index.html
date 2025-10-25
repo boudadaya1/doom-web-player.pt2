@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Freedoom Web Player</title>
+
+  <!-- js-dos 6.22 -->
+  <script src="https://js-dos.com/6.22/current/js-dos.js"></script>
+
+  <style>
+    html {
+      /* Chrome/Safari/Edge/Firefox text scaling compatibility */
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    body {
+      background: black;
+      color: lime;
+      font-family: monospace;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #00ff00;
+    }
+
+    button {
+      background: transparent;
+      border: 2px solid lime;
+      color: lime;
+      font-family: monospace;
+      font-size: 1.2rem;
+      padding: 10px 25px;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: lime;
+      color: black;
+    }
+
+    #dosbox {
+      width: 100%;
+      height: 80vh;
+      margin-top: 20px;
+      border: 2px solid lime;
+      border-radius: 10px;
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: lime;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Freedoom (Free DOOM Engine)</h1>
+  <p>
+    Click the button below to start playing the open-source Freedoom project right in your browser.
+  </p>
+
+  <button id="startBtn" title="Click to start Freedoom">▶ Start Freedoom</button>
+  <div id="dosbox">Waiting to start...</div>
+
+  <script>
+    async function initAndRun() {
+      const container = document.getElementById("dosbox");
+      container.textContent = "Loading Freedoom...";
+
+      if (typeof Dos === "undefined") {
+        container.textContent = "Error: js-dos library failed to load.";
+        console.error("js-dos (Dos) is not defined. Check script loading.");
+        return;
+      }
+
+      try {
+        // Create js-dos player
+        let player = Dos(container, {
+          wdosboxUrl: "https://js-dos.com/6.22/current/wdosbox.js"
+        });
+
+        // Handle both sync and async returns
+        if (player && typeof player.then === "function") {
+          console.log("Dos() returned a Promise; awaiting it...");
+          player = await player;
+        }
+
+        // Verify player API
+        if (player && typeof player.run === "function") {
+          console.log("Running Freedoom...");
+          const url = "https://archive.org/download/freedoom-0.12.1/freedoom-0.12.1.zip?v=" + Date.now();
+          await player.run(url);
+          console.log("Freedoom started successfully!");
+          return;
+        }
+
+        // Fallback if .run is missing
+        console.error("player.run is not a function. Player object:", player);
+        container.textContent = "Failed to load Freedoom: player.run is not available. Check console for details.";
+
+      } catch (err) {
+        console.error("Failed to load Freedoom:", err);
+        container.textContent = "Error loading Freedoom: " + (err.message || err);
+      }
+    }
+
+    document.getElementById("startBtn").addEventListener("click", initAndRun);
+  </script>
+</body>
+</html>
